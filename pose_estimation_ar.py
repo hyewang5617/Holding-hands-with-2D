@@ -2,13 +2,17 @@ from pathlib import Path
 
 import cv2 as cv
 import numpy as np
+from PIL import Image, ImageSequence
 
 
 CHECKERBOARD = (7, 5)
 SQUARE_SIZE = 1.0
 INPUT_VIDEO = "chessboard.mp4"
 OUTPUT_VIDEO = "pose_estimation_result.mp4"
-ASSET_PATH = Path("assets/character.png")
+ASSET_CANDIDATES = [
+    Path("assets/character.gif"),
+    Path("assets/character.png"),
+]
 
 
 def build_object_points(pattern_size, square_size):
@@ -18,22 +22,72 @@ def build_object_points(pattern_size, square_size):
     return objp
 
 
-def load_character_rgba(asset_path):
-    if not asset_path.exists():
-        print(f"Character asset not found: {asset_path}")
-        print("Place your PNG file at assets/character.png")
-        raise SystemExit
+def choose_asset_path():
+    for asset_path in ASSET_CANDIDATES:
+        if asset_path.exists():
+            return asset_path
 
+    print("Character asset not found.")
+    print("Place one of the following files:")
+    for asset_path in ASSET_CANDIDATES:
+        print(f"- {asset_path}")
+    raise SystemExit
+
+
+def rgba_to_bgra(arr):
+    return cv.cvtColor(arr, cv.COLOR_RGBA2BGRA)
+
+
+def add_alpha_from_white_background(img_bgr, threshold=245):
+    img_gray = cv.cvtColor(img_bgr, cv.COLOR_BGR2GRAY)
+    alpha = np.where(img_gray >= threshold, 0, 255).astype(np.uint8)
+    return np.dstack((img_bgr, alpha))
+
+
+def load_png_asset(asset_path):
     character = cv.imread(str(asset_path), cv.IMREAD_UNCHANGED)
     if character is None:
         print(f"Failed to load character asset: {asset_path}")
         raise SystemExit
 
-    if character.ndim != 3 or character.shape[2] != 4:
-        print("Character PNG must include an alpha channel.")
+    if character.ndim == 2:
+        character = cv.cvtColor(character, cv.COLOR_GRAY2BGRA)
+        character[:, :, 3] = 255
+    elif character.ndim == 3 and character.shape[2] == 3:
+        character = add_alpha_from_white_background(character)
+    elif character.ndim == 3 and character.shape[2] == 4:
+        pass
+    else:
+        print("Unsupported PNG format.")
         raise SystemExit
 
-    return character
+    return [character]
+
+
+def load_gif_asset(asset_path):
+    frames = []
+    with Image.open(asset_path) as gif:
+        for frame in ImageSequence.Iterator(gif):
+            rgba = frame.convert("RGBA")
+            frame_np = np.array(rgba)
+            frames.append(rgba_to_bgra(frame_np))
+
+    if not frames:
+        print(f"Failed to decode GIF frames: {asset_path}")
+        raise SystemExit
+
+    return frames
+
+
+def load_asset_frames(asset_path):
+    suffix = asset_path.suffix.lower()
+    if suffix == ".gif":
+        return load_gif_asset(asset_path)
+    if suffix == ".png":
+        return load_png_asset(asset_path)
+
+    print(f"Unsupported asset type: {asset_path.suffix}")
+    raise SystemExit
 
 
 def get_billboard_points(pattern_size, square_size, image_shape):
@@ -64,12 +118,15 @@ def get_billboard_points(pattern_size, square_size, image_shape):
 def alpha_blend_warped(frame, warped_bgr, warped_alpha):
     alpha = warped_alpha.astype(np.float32) / 255.0
     alpha = alpha[..., None]
-    frame[:] = (warped_bgr.astype(np.float32) * alpha + frame.astype(np.float32) * (1.0 - alpha)).astype(np.uint8)
+    frame[:] = (
+        warped_bgr.astype(np.float32) * alpha
+        + frame.astype(np.float32) * (1.0 - alpha)
+    ).astype(np.uint8)
 
 
-def overlay_character(frame, character_rgba, projected_quad):
+def overlay_character(frame, character_bgra, projected_quad):
     h, w = frame.shape[:2]
-    src_h, src_w = character_rgba.shape[:2]
+    src_h, src_w = character_bgra.shape[:2]
 
     src_quad = np.float32(
         [
@@ -80,11 +137,10 @@ def overlay_character(frame, character_rgba, projected_quad):
         ]
     )
     dst_quad = np.float32(projected_quad).reshape(4, 2)
-
     H = cv.getPerspectiveTransform(src_quad, dst_quad)
 
-    character_bgr = character_rgba[:, :, :3]
-    character_alpha = character_rgba[:, :, 3]
+    character_bgr = character_bgra[:, :, :3]
+    character_alpha = character_bgra[:, :, 3]
 
     warped_bgr = cv.warpPerspective(
         character_bgr,
@@ -128,9 +184,10 @@ def main():
     K = data["mtx"]
     dist = data["dist"]
 
-    character_rgba = load_character_rgba(ASSET_PATH)
+    asset_path = choose_asset_path()
+    asset_frames = load_asset_frames(asset_path)
     board_points = build_object_points(CHECKERBOARD, SQUARE_SIZE)
-    billboard_points = get_billboard_points(CHECKERBOARD, SQUARE_SIZE, character_rgba.shape)
+    billboard_points = get_billboard_points(CHECKERBOARD, SQUARE_SIZE, asset_frames[0].shape)
 
     video = cv.VideoCapture(INPUT_VIDEO)
     if not video.isOpened():
@@ -138,7 +195,8 @@ def main():
         raise SystemExit
 
     writer = None
-    print("Running camera pose estimation and PNG AR overlay... (ESC to quit)")
+    frame_idx = 0
+    print(f"Running camera pose estimation and AR overlay with {asset_path.name}... (ESC to quit)")
 
     while True:
         valid, frame = video.read()
@@ -165,11 +223,14 @@ def main():
 
             success, rvec, tvec = cv.solvePnP(board_points, corners, K, dist)
             if success:
-                projected_quad, _ = cv.projectPoints(billboard_points, rvec, tvec, K, dist)
-                overlay_character(frame, character_rgba, projected_quad)
+                projected_quad, _ = cv.projectPoints(
+                    billboard_points, rvec, tvec, K, dist
+                )
+                asset_frame = asset_frames[frame_idx % len(asset_frames)]
+                overlay_character(frame, asset_frame, projected_quad)
                 draw_axes(frame, rvec, tvec, K, dist)
                 cv.drawChessboardCorners(frame, CHECKERBOARD, corners, found)
-                status_text = "Pose estimated + character overlay"
+                status_text = f"Pose estimated + {asset_path.suffix[1:].upper()} overlay"
 
         if writer is None:
             frame_size = (frame.shape[1], frame.shape[0])
@@ -180,12 +241,22 @@ def main():
                 frame_size,
             )
 
-        cv.putText(frame, status_text, (10, 30), cv.FONT_HERSHEY_DUPLEX, 0.7, (0, 255, 0), 1)
+        cv.putText(
+            frame,
+            status_text,
+            (10, 30),
+            cv.FONT_HERSHEY_DUPLEX,
+            0.7,
+            (0, 255, 0),
+            1,
+        )
         cv.imshow("Camera Pose Estimation and AR", frame)
         writer.write(frame)
 
         if cv.waitKey(30) & 0xFF == 27:
             break
+
+        frame_idx += 1
 
     video.release()
     if writer is not None:
