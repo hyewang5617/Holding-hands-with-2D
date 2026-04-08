@@ -1,0 +1,528 @@
+
+
+===== PAGE 1 =====
+Image Geometry
+Sunglok Choi, Assistant Professor, Ph.D.
+Dept. of Computer Science and Engineering, SEOULTECH
+sunglok@seoultech.ac.kr| https://mint-lab.github.io/
+Slides and example codes are available:
+https://github.com/mint-lab/cv_tutorial
+
+===== PAGE 2 =====
+Review) Absolute Camera Pose Estimation
+▪ Example) Pose estimation (book) + camera calibration – initially given K [pose_estimation_book3.py]
+2
+- Load the cover image
+- Extract ORB features
+- Build 
+3D object points 𝐗1, 𝐗2, …
+- Grab an input image
+- Extract 
+ORB features 𝐱1, 𝐱2, …
+- Match them to the object features
+[Outlier Rejection]
+- Remove wrong matches using
+cv::
+findHomography()
+[Camera Pose Estimation]
+- Estimate camera parameters using
+cv::
+calibrateCamera()
+[Camera Pose Update]
+-
+ Intrinsic: 
+K (initially known)
+-
+ Extrinsic: 
+R
+, 
+𝐭
+Pass correct matchesPass tentative matches
+Draw the box using 
+cv::
+projectPoints
+()
+(free from K)
+(due to wrong initial K)
+
+===== PAGE 3 =====
+Table of Contents
+▪
+ Planar 
+Homography
+▪ Triangulation
+4
+
+===== PAGE 4 =====
+Planar Homography
+5
+transformation H
+rotation
+translation
+scaling / aspect ratio
+shear
+perspective
+projection
+composition
+plane
+𝐱′ = H𝐱
+𝐱 𝐱′
+
+===== PAGE 5 =====
+Planar Homography
+6
+Euclidean Transformation
+(a.k.a. Rigid Transform)
+Similarity Transformation Affine Transformation Projective Transformation
+(a.k.a. Planar Homography)
+Matrix Forms H
+cos 𝜃 − sin 𝜃 𝑡𝑥
+sin 𝜃 cos 𝜃 𝑡𝑦
+0 0 1
+𝑠 cos 𝜃 −𝑠 sin 𝜃 𝑡𝑥
+𝑠 sin 𝜃 𝑠 cos 𝜃 𝑡𝑦
+0 0 1
+𝑎11 𝑎12 𝑡𝑥
+𝑎21 𝑎22 𝑡𝑦
+0 0 1
+𝑎11 𝑎12 𝑡𝑥
+𝑎21 𝑎22 𝑡𝑦
+𝑣1 𝑣2 1
+DOF 3 4 6 8
+Transformations
+- rotation
+- translation
+- scaling
+- aspect ratio
+- shear
+- perspective projection
+O
+O
+X
+X
+X
+X
+O
+O
+O
+X
+X
+X
+O
+O
+O
+O
+O
+X
+O
+O
+O
+O
+O
+O
+Invariants
+- length
+- angle
+- ratio of lengths
+- parallelism
+- incidence
+- cross ratio
+O
+O
+O
+O
+O
+O
+X
+O
+O
+O
+O
+O
+X
+X
+X
+O
+O
+O
+X
+X
+X
+X
+O
+O
+OpenCV APIs
+cv.getAffineTransform()
+cv.estimateRigidTransform()
+-
+cv.warpAffine()
+cv.getPerspectiveTransform()
+-
+cv.findHomography()
+cv.warpPerspective()
+Note) Similarly 3D transformations (3D-3D geometry) are represented as 4x4 matrices.
+
+===== PAGE 6 =====
+Note) Affine Transformation
+7
+ 
+   
+ 
+   
+      
+      
+      
+         
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+   
+ 
+   
+      
+         
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+   
+ 
+   
+      
+      
+                  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+   
+ 
+       
+      
+        
+      
+ 
+                   
+     
+     
+      
+     
+ 
+ 
+   
+ 
+   
+ 
+      
+          
+ 
+                    
+ 
+ 
+     
+ 
+ 
+ 
+   
+ 
+   
+ 
+          
+      
+ 
+                    
+ 
+     
+ 
+ 
+ 
+ 
+   
+ 
+   
+ 
+   
+       
+       
+                    
+  
+ 
+ 
+  
+ 
+ 
+ 
+   
+ 
+   
+      
+       
+                    
+ 
+ 
+ 
+  
+ 
+ 
+ 
+   
+ 
+   
+       
+      
+                    
+  
+ 
+ 
+ 
+ 
+ Image: Wikipedia
+
+===== PAGE 7 =====
+Note) Affine Transformation
+▪ Q) What is difference between two images? 
+– Parallel projection vs. Perspective projection
+• Affine camera (a.k.a. weak perspective camera; 𝑓 = ∞)
+• Less natural but (sometimes) useful in technical visualization
+8
+Image: Scatchpixel, Wikipedia
+
+
+===== PAGE 8 =====
+Planar Homography
+▪ Planar homography estimation
+– Unknown: Planar homography H (8 DOF)
+– Given: Point correspondence (𝐱1, 𝐱1
+′ ), …, (𝐱𝑛, 𝐱𝑛′ )
+– Constraints: 𝑛 x projective transformation 𝐱𝑖
+′ = H𝐱𝑖
+– Solutions (𝑛 ≥ 4) → 4-point algorithm
+• OpenCV: cv.getPerspectiveTransform() and cv.findHomography()
+• Note) More simplified transformations need less number of minimal correspondence.
+– Affine (𝑛 ≥ 3), similarity (𝑛 ≥ 2), Euclidean (𝑛 ≥ 2)
+– Note) Planar homography can be decomposed as relative camera pose.
+• OpenCV: cv.decomposeHomographyMat()
+• The decomposition needs to know camera matrices.
+9
+relative pose R, 𝐭
+𝐱𝑖
+′ = H𝐱𝑖
+𝐱𝑖
+′
+𝐱𝑖
+
+===== PAGE 9 =====
+Planar Homography
+▪ Example) Perspective distortion correction [perspective_correction.py]
+10
+Click
+pts_dst
+pts_src
+𝐱𝑖
+′ = H𝐱𝑖
+
+
+===== PAGE 10 =====
+Planar Homography
+▪ Example) Perspective distortion correction [perspective_correction.py]
+def mouse_event_handler(event, x, y, flags, param):
+if event == cv.EVENT_LBUTTONDOWN:
+param.append((x, y))
+if __name__ == '__main__':
+img_file = '../data/sunglok_card.jpg'
+card_size = (450, 250)
+offset = 10
+# Prepare the rectified points
+pts_dst = np.array([[0, 0], [card_size[0], 0], [0, card_size[1]], [card_size[0], card_size[1]]])
+# Load an image
+img = cv.imread(img_file)
+# Get the matched points from mouse clicks
+pts_src = []
+wnd_name = 'Perspective Correction: Point Selection'
+cv.namedWindow(wnd_name)
+cv.setMouseCallback(wnd_name, mouse_event_handler, pts_src)
+while len(pts_src) < 4:
+img_display = img.copy()
+cv.rectangle(img_display, (offset, offset), (offset + card_size[0], offset + card_size[1]), (0, 0, 255), 2)
+idx = min(len(pts_src), len(pts_dst))
+cv.circle(img_display, offset + pts_dst[idx], 5, (0, 255, 0), -1)
+cv.imshow(wnd_name, img_display)
+key = cv.waitKey(10)
+11
+
+===== PAGE 11 =====
+Planar Homography
+▪ Example) Perspective distortion correction [perspective_correction.py]
+if __name__ == '__main__':
+img_file = '../data/sunglok_card.jpg'
+card_size = (450, 250)
+offset = 10
+# Prepare the rectified points
+pts_dst = np.array([[0, 0], [card_size[0], 0], [0, card_size[1]], [card_size[0], card_size[1]]])
+# Load an image
+img = cv.imread(img_file)
+# Get the matched points from mouse clicks
+pts_src = []
+...
+if len(pts_src) == 4:
+# Calculate planar homography and rectify perspective distortion
+H, _ = cv.findHomography(np.array(pts_src), pts_dst)
+img_rectify = cv.warpPerspective(img, H, card_size)
+# Show the rectified image
+cv.imshow('Perspective Correction: Rectified Image', img_rectify)
+cv.waitKey(0)
+cv.destroyAllWindows()
+12
+
+===== PAGE 12 =====
+Planar Homography
+▪ Example) Planar image stitching [image_stitching.py]
+# Load two images
+img1 = cv.imread('../data/hill01.jpg')
+img2 = cv.imread('../data/hill02.jpg')
+# Retrieve matching points
+brisk = cv.BRISK_create()
+keypoints1, descriptors1 = brisk.detectAndCompute(img1, None)
+keypoints2, descriptors2 = brisk.detectAndCompute(img2, None)
+fmatcher = cv.DescriptorMatcher_create('BruteForce-Hamming')
+match = fmatcher.match(descriptors1, descriptors2)
+# Calculate planar homography and merge them
+pts1, pts2 = [], []
+for i in range(len(match)):
+pts1.append(keypoints1[match[i].queryIdx].pt)
+pts2.append(keypoints2[match[i].trainIdx].pt)
+pts1 = np.array(pts1, dtype=np.float32)
+pts2 = np.array(pts2, dtype=np.float32)
+H, inlier_mask = cv.findHomography(pts2, pts1, cv.RANSAC)
+img_merged = cv.warpPerspective(img2, H, (img1.shape[1]*2, img1.shape[0]))
+img_merged[:,:img1.shape[1]] = img1 # Copy
+# Show the merged image
+img_matched = cv.drawMatches(img1, keypoints1, img2, keypoints2, match, None, None, None,
+matchesMask=inlier_mask.ravel().tolist()) # Remove `matchesMask` if you want to show 
+13
+
+
+===== PAGE 13 =====
+Planar Homography
+▪ Example) 2D video stabilization [video_stabilization.py]
+# Open a video and get the reference image and feature points
+video = cv.VideoCapture('../data/traffic.avi')
+_, gray_ref = video.read()
+if gray_ref.ndim >= 3:
+gray_ref = cv.cvtColor(gray_ref, cv.COLOR_BGR2GRAY)
+pts_ref = cv.goodFeaturesToTrack(gray_ref, 2000, 0.01, 10)
+# Run and show video stabilization
+while True:
+# Read an image from `video`
+valid, img = video.read()
+if not valid:
+break
+if img.ndim >= 3:
+gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+else:
+gray = img.copy()
+# Extract optical flow and calculate planar homography
+pts, status, err = cv.calcOpticalFlowPyrLK(gray_ref, gray, pts_ref, None)
+H, inlier_mask = cv.findHomography(pts, pts_ref, cv.RANSAC)
+# Synthesize a stabilized image
+warp = cv.warpPerspective(img, H, (img.shape[1], img.shape[0]))
+# Show the original and stabilized images together
+14
+A shaking CCTV video
+
+
+===== PAGE 14 =====
+Planar Homography
+▪ Assumption) A plane is observed by two views.
+– Perspective distortion correction: A complete plane
+15
+
+
+===== PAGE 15 =====
+Planar Homography
+▪ Assumption) A plane is observed by two views.
+– Perspective distortion correction: A complete plane
+– Planar image stitching: An approximated plane (← distance ≫ depth variation)
+– 2D video stabilization:  An approximated plane (← small motion)
+16
+
+
+===== PAGE 16 =====
+Triangulation
+▪ Triangulation (point localization)
+– Unknown: Position of a 3D point 𝐗 (3 DOF)
+– Given: Point correspondence (𝐱, 𝐱′), camera matrices (K, K′), and relative pose (R, 𝐭)
+– Constraints: 𝐱 = K I | 𝟎 𝐗 = P 𝐗, 𝐱′ = K′ R | 𝐭 𝐗 = P′𝐗
+– Solution
+• OpenCV cv.triangulatePoints()
+• Special case) Stereo cameras
+R = I3×3, 𝐭 =
+−𝑏
+0
+0
+, and K = K′ =
+𝑓 0 𝑐𝑥
+0 𝑓 𝑐𝑦
+0 0 1
+∴ 𝑍 =
+𝑓
+𝑥−𝑥′ 𝑏, 𝑋 =
+𝑥−𝑐𝑥
+𝑓 𝑍, and 𝑌 =
+𝑦−𝑐𝑦
+𝑓 𝑍
+41
+camera #1 camera #2
+image plane
+relative pose R, 𝐭
+𝐗
+𝐱 𝐱′
+
+===== PAGE 17 =====
+Triangulation
+▪ Example) Triangulation
+f, cx, cy = 1000., 320., 240.
+pts0 = np.loadtxt('../data/image_formation0.xyz')[:,:2]
+pts1 = np.loadtxt('../data/image_formation1.xyz')[:,:2]
+output_file = '../data/triangulation.xyz'
+# Estimate relative pose of two view
+F, _ = cv.findFundamentalMat(pts0, pts1, cv.FM_8POINT)
+K = np.array([[f, 0, cx], [0, f, cy], [0, 0, 1]])
+E = K.T @ F @ K
+_, R, t, _ = cv.recoverPose(E, pts0, pts1)
+# Reconstruct 3D points (triangulation)
+P0 = K @ np.eye(3, 4, dtype=np.float32)
+Rt = np.hstack((R, t))
+P1 = K @ Rt
+X = cv.triangulatePoints(P0, P1, pts0.T, pts1.T)
+X /= X[3]
+X = X.T
+# Write the reconstructed 3D points
+np.savetxt(output_file, X)
+42
+𝐱 = K I | 𝟎 𝐗 = P 𝐗
+𝐱′ = K′ R | 𝐭 𝐗 = P′𝐗
+CloudCompare
+A point cloud: data/box.xyz
+output_file: data/triangulation.xyz
+
+===== PAGE 18 =====
+Summary
+▪ Planar Homography: 𝐱𝑖
+′ = H𝐱𝑖
+– Example) Perspective distortion correction
+– Example) Planar image stitching
+– Example) 2D video stabilization
+▪ Triangulation: Finding 𝐗 (3 DOF)
+– Example) Triangulation
+44

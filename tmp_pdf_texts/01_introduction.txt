@@ -1,0 +1,234 @@
+
+
+===== PAGE 1 =====
+Introduction
+Sunglok Choi, Assistant Professor, Ph.D.
+Dept. of Computer Science and Engineering, SEOULTECH
+sunglok@seoultech.ac.kr| https://mint-lab.github.io/
+Slides and example codes are available:
+https://github.com/mint-lab/cv_tutorial
+
+===== PAGE 2 =====
+What is Computer Vision?
+▪ Computer vision is an interdisciplinary field that deals with how computers can be made to gain 
+high-level understanding from digital images or videos.
+▪ From the perspective of engineering, it seeks to automate tasks that the human visual system can 
+do.[1][2][3]
+▪ "Computer vision is concerned with the automatic extraction, analysis and understanding of useful 
+information from a single image or a sequence of images.
+▪ It involves the development of a theoretical and algorithmic basis to achieve automatic visual 
+understanding."[9]
+2Reference: Wikipedia
+
+===== PAGE 3 =====
+What is Computer Vision?
+▪ Computer vision is an interdisciplinary field that deals with how computers can be made to gain 
+high-level understanding from digital images or videos.
+▪ From the perspective of engineering, it seeks to automate tasks that the human visual system can 
+do.[1][2][3]
+▪ "Computer vision is concerned with the automatic extraction, analysis and understanding of useful 
+information from a single image or a sequence of images.
+▪ It involves the development of a theoretical and algorithmic basis to achieve 
+automatic
+ visual
+understanding
+."[9]
+3
+Reference: Wikipedia
+
+===== PAGE 4 =====
+What is Computer Vision?
+4
+Computer
+Vision
+Real World (Projected) Image Information
+Face
+Human
+Tower of Pisa
+Location
+Shape
+Image
+Processing
+(transformed) Image/Signal
+(Synthesized) Image
+Computer
+Graphics
+Image Understanding
+inverse relationship
+
+===== PAGE 5 =====
+Computer VisionWhat is Computer Vision?
+5
+Computer
+Vision
+Real World (Projected) Image Information
+Face
+Human
+Tower of Pisa
+Location
+Shape
+Image
+Processing
+(transformed) Image/Signal
+(Synthesized) Image
+Computer
+Graphics
+Image Understanding
+inverse relationship
+
+===== PAGE 6 =====
+What is Computer Vision?
+6
+Computer Vision
+What is it?
+▪ Label (e.g. Tower of Pisa)
+▪ Shape (e.g.                 )
+Where am I?
+▪ Place (e.g. Piazza del Duomo, Pisa, Italy)
+▪ Location (e.g.                 )
+(84, 10, 18) [m]
+
+===== PAGE 7 =====
+What is Computer Vision?
+7
+Computer Vision
+What is it?
+▪ Label (e.g. Tower of Pisa)
+▪ Shape (e.g.                 )
+Where am I?
+▪ Place (e.g. Piazza del Duomo, Pisa, Italy)
+▪ Location (e.g.                 )
+Recognition Problems vs. Reconstruction Problems
+(84, 10, 18) [m]
+YOLO v2 (2016)
+ ORB-SLAM2 (2016)
+Stanford CS231n:
+Deep Learning for Computer Vision
+Stanford CS231A:
+Computer Vision,
+From 3D Perception to 3D Reconstruction and beyond
+Generation Problems
+
+
+===== PAGE 8 =====
+Examples: Image Editing and Generation
+▪ MMEditing (2022)
+8
+
+===== PAGE 9 =====
+Examples: Object Detection (+ Instance Segmentation)
+▪ YOLOv8 (2023)
+Video: LearnOpenCV (YouTube)
+9
+
+===== PAGE 10 =====
+Examples: Multi-Object Tracking (MOT)
+▪ ByteTrack (2022)
+10
+Video: MMTracking
+
+===== PAGE 11 =====
+Examples: Human Pose Estimation
+▪ MediaPipe Holostic (2019)
+11
+
+
+===== PAGE 12 =====
+Examples: Localization and Mapping
+▪ ORB-SLAM3 (2021)
+12
+Video: Raul Mur Artal (YouTube)
+
+
+===== PAGE 13 =====
+Examples: 3D Reconstruction
+▪ COLMAP (2016)
+13
+A sparse model of central Rome using 21K photos produced by COLMAP’s SfM pipeline
+Dense models of several landmarks produced by COLMAP’s MVS pipeline
+
+===== PAGE 14 =====
+Examples: New View Synthesis
+▪ NeRF (2020)
+14
+
+
+===== PAGE 15 =====
+Why Do We Study Computer Vision? 
+▪ Vision is useful.
+▪ Vision is interesting.
+▪ Vision is difficult.
+– The half of primate cerebral cortex is devoted to visual processing.
+– Achieving human-level visual perception is probably “AI-complete”.
+15
+Slide: Fei-Fei Li (CS2321a)
+
+===== PAGE 16 =====
+Challenges: 2D Projection
+16Image: Floor trick arts
+
+===== PAGE 17 =====
+Challenges: Viewpoint Variation
+17Slide: Fei-Fei Li (CS2321a)
+Michelangelo (1475-1564)
+
+===== PAGE 18 =====
+Challenges: Illumination Change
+18
+Slide: Fei-Fei Li (CS2321a)
+J. Koenderink
+
+===== PAGE 19 =====
+Challenges: Scale Ambiguity
+19
+The Sandcrawler @ Star Wars IV: A New Hope (1977)
+Image: StarWars.com
+
+
+===== PAGE 20 =====
+Challenges: Deformation
+20
+Slide: Fei-Fei Li (CS2321a)
+Xu, Beihong (1943)
+
+===== PAGE 21 =====
+21
+Challenges: Occlusion
+Slide: Fei-Fei Li (CS2321a)
+Magritte (1957)
+
+===== PAGE 22 =====
+Challenges: Background Clutter
+22
+Slide: Fei-Fei Li (CS2321a)
+Tim Laman (National Geographic)
+
+===== PAGE 23 =====
+Challenges: Motion
+23
+Slide: Fei-Fei Li (CS2321a)
+
+===== PAGE 24 =====
+Challenges: Object Intra-class Variation
+24
+Slide: Fei-Fei Li (CS2321a)
+
+===== PAGE 25 =====
+Challenges: Local Ambiguity
+25Slide: Fei-Fei Li (CS2321a)
+
+
+===== PAGE 26 =====
+Summary
+▪ What is computer vision?
+– Automatic visual understanding
+– Three major problems: Recognition, reconstruction, and generation problems
+▪ Examples
+– Object detection, …, 3D reconstruction, …
+▪ Why do we study computer vision?
+– Vision is useful.
+– Vision is difficult.
+– Vision is interesting.
+▪ Challenges
+– 2D projection (missing depth), …, object intra-class variation, …
+26

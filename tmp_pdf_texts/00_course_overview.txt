@@ -1,0 +1,165 @@
+
+
+===== PAGE 1 =====
+Course Overview
+Sunglok Choi, Assistant Professor, Ph.D.
+Dept. of Computer Science and Engineering, SEOULTECH
+sunglok@seoultech.ac.kr| https://mint-lab.github.io/
+
+===== PAGE 2 =====
+Course Information
+▪ When
+– Wednesday 14:00 – 16:50 in Korean
+▪ Where
+– Offline: Mirae Hall B104
+– Online: SEOULTECH e-Class (+ Zoom if necessary)
+▪ Lecturer: Sunglok Choi
+– E-mail: sunglok@seoultech.ac.kr
+• An online meeting is available if you request it in advance via e-mail.
+– Office: 327 Mirae Hall
+▪ Textbook: Course slides
+– https://github.com/mint-lab/cv_tutorial
+▪ Online References: MINT Lab’s Know-Where
+– Please refer the Computer Vision category, especially with highlight
+2
+
+
+===== PAGE 3 =====
+Course Objectives
+▪ This course aims to you to enable to
+– Understand the following theories using Python, NumPy, and OpenCV
+• Image processing (image filtering) and color space
+• Camera projection models, camera calibration, and camera pose estimation
+• Planar homography and image transformation
+• CNN backbone networks and vision foundation model
+• Image classification and segmentation
+• Object recognition and tracking
+– Implement your own applications such as
+• Media arts
+• Augmented reality
+• Image rectification and stitching
+• Image classification
+• Pedestrian/vehicle detection
+3
+Understanding CV and Making My CV Project!
+
+===== PAGE 4 =====
+Motivation: Why Learn Computer Vision?
+▪ Building computer vision background to understand papers
+4
+Teed et al, “Deep Patch Visual Odometry”, NeurIPS, 2023 Github
+Wang et al, “DUSt3R: Geometric 3D Vision Made Easy”, CVPR, 2024 Homepage
+
+===== PAGE 5 =====
+Motivation: Why Learn Computer Vision?
+▪ Building computer vision background to understand papers
+5
+Lin et al, “Depth Anything 3: Recovering the Visual Space from Any Views”, arXiv, 2025 Homepage
+Midenhall et al, “NeRF: Representing Scenes as Neural Radiance Fields for View Synthesis”, ECCV, 2020 Homepage
+
+===== PAGE 6 =====
+(Tentative) Weekly Schedule
+7
+Week Topics Homework Assignments
+01 Course Overview / Introduction -
+02 Image Editing: Learning OpenCV Video Recorder
+03 Image Processing Cartoon Rendering
+04 Color -
+05 Image Formation Camera Calibration
+06 Image Geometry Camera Pose Estimation and AR
+07 Solving Problems Image Correspondence -
+08 Image Correspondence Solving Problems Image Stitching
+09 Image Classification: CNN Backbone Networks Transfer Learning
+10 Image Segmentation / Object Detection Term Project Proposal
+11 Midterm Examination -
+12 Toward Vision Foundation Models -
+13 Object Tracking -
+14 3D Vision Term Project Online Exhibition Term Project Submission
+15 Term Project Online Exhibition 3D Vision -
+← Video Lecture
+(School Founding Day)
+← Individual Meeting
+(Election Day)
+
+===== PAGE 7 =====
+Grading Policy
+▪ Examination (30%)
+– Mid-term exam: 30% / No final exam!
+▪ Homework assignments (30%)
+– Homework assignments will be given almost every 1 or 2 weeks (roughly 6 times).
+– Their deadline is generally within roughly 1 or 2 weeks.
+▪ Term project (30%)
+– Topic: Making your desired CV software or systems.
+– You need to use online Git repository (e.g. Github, Bitbucket) as public or private.
+– You need to present your project using README.md.
+– You can organize a team or do your project individually. (I will look at your Git log.)
+– You can use other programming language and tools beyond this class.
+▪ Attendance (10%)
+– Please let me know your absence due to public affairs though e-mail to be recognized as attendance.
+8
+
+===== PAGE 8 =====
+Grading Policy
+▪ Grading: As good as possible within the guideline of the school
+– Percentile
+• Korean course: A+ 15%, A0 30%, B+ 50%, B0 70%
+• English or 4th-year course: A+ 20%, A0 40%, B+ 60%, B0 80%
+– Average
+• Korean course: Max 3.43
+• English or 4th-year course: Max 3.60
+– Note) Your total score and rank will be open at the end of evalution.
+Please claim on your score within the given deadline.
+9
+
+===== PAGE 9 =====
+Prerequisite
+▪ Python
+– Note) Python Cheatsheet
+▪ NumPy
+– Note) NumPy Cheatsheet
+▪ PyTorch
+– Note) PyTorch Cheatsheet
+▪ OpenCV (optional)
+– Note) OpenCV Cheatsheet
+10
+
+===== PAGE 10 =====
+Prerequisite: Python
+▪ Q) (Built-in constant) Are None and False same? (None == False) What is their difference?
+▪ Q) (String) Do you know f-string? What is its advantage?
+– e.g. f'My name is {name} and my next room is {room_no + 1:04d}’
+▪ Q) (Compound data) What is difference between tuple and list? What are packing and unpacking?
+– e.g. (a, b) = (b, a)
+▪ Q) (Compound data) Can you understand list comprehension?
+– e.g. sum([x**2 for x in range(4)])
+▪ Q) (Operators) What is the membership operator, in?
+– e.g. 1 not in range(0, 5, 2)
+▪ Q) (Flow control) What are falsy and trusy values?
+– e.g. [False, 0, 0., None, '', (), [], {}, range(0), (None), (None,), [None], {None}]
+▪ Q) (Function) How many values does a Python function return? (e.g. 1 or 2 or …)
+11
+
+===== PAGE 11 =====
+Prerequisite: NumPy
+▪ Q) (Array) What is difference between list and NumPy array?
+– Both can concatenate Python data in multiple dimensions.
+• List: Heterogeneous data type / NumPy array: Homogeneous data type
+– Note) NumPy array is close to a concept of array in C/C++ and Java.
+– NumPy array provides
+• Advanced indexing (e.g. logical/fancy indexing)
+• Advanced slicing (e.g. column/subarray slicing)
+• Arithmetic operations (e.g. addition, multiplication)
+• Linear algebra (e.g. matrix multiplication, pseudo-inverse)
+• Useful utilities and tools (e.g. load()/save(), loadtxt()/savetxt())
+12
+
+===== PAGE 12 =====
+Prerequisite: PyTorch
+▪ Q) (Tensor) What is difference between NumPy array and PyTorch tensor?
+– (From my point of view) PyTorch is an extention of NumPy with supports for
+• A n-dimensional array (a.k.a tensor) with GPU acceleration and automatic differentiation
+• Useful modules for building and training neural networks
+▪ Q) (CNN) How many parameters of the following FC layer and CNN layer?
+▪ Q) (CNN) What is advantage of CNN layers?
+13
+kernel

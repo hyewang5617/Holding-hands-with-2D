@@ -1,0 +1,1311 @@
+
+
+===== PAGE 1 =====
+Geometric Image Formation
+Sunglok Choi, Assistant Professor, Ph.D.
+Dept. of Computer Science and Engineering, SEOULTECH
+sunglok@seoultech.ac.kr| https://mint-lab.github.io/
+Slides and example codes are available:
+https://github.com/mint-lab/cv_tutorial
+
+===== PAGE 2 =====
+Getting Started with 2D
+▪ Image coordinate (unit: [pixel])
+▪ Camera coordinate (unit: [meter])
+– Position: Focal point
+– X/Y direction: Image coordinate
+– Z direction: Right-hand rule
+2
+X
+Y
+X
+Y
+Z
+𝐱 = [𝑥, 𝑦]⊺ or [𝑢, 𝑣]⊺
+𝐗 = [𝑋, 𝑌, 𝑍]⊺
+
+===== PAGE 3 =====
+Getting Started with 2D
+▪ 2D rotation matrix
+– Rotational direction: Right-hand rule
+▪ 3D rotation matrix
+– Rotational direction: Right-hand rule
+3
+X
+Y
+𝜃
+X
+Y
+Z
+𝜃𝑥
+𝜃𝑦
+𝜃𝑧
+Cameras Vehicles Airplanes Telescopes
+𝜃𝑥 Tilt Pitch Attitude Elevation
+𝜃𝑦 Pan Yaw Heading Azimuth
+𝜃𝑧 Roll Roll Bank Horizon
+R 𝜃 = cos 𝜃 − sin 𝜃
+sin 𝜃 cos 𝜃
+Properties of a rotation matrix
+• R−1 = R⊺ (orthogonal matrix)
+• det(R) = 1
+
+===== PAGE 4 =====
+Getting Started with 2D
+▪ 3D rotation representation (3 DOF)
+– 3D rotation matrix (9 parameters)
+• Notation: 3x3 matrix
+– e.g. R = R𝑧 𝜃𝑧 R𝑦 𝜃𝑦 R𝑥 𝜃𝑥 =
+cos 𝜃𝑧 − sin 𝜃𝑧 0
+sin 𝜃𝑧 cos 𝜃𝑧 0
+0 0 1
+cos 𝜃𝑦 0 sin 𝜃𝑦
+0 1 0
+−sin 𝜃𝑦 0 cos 𝜃𝑦
+1 0 0
+0 cos 𝜃𝑥 − sin 𝜃𝑥
+0 sin 𝜃𝑥 cos 𝜃𝑥
+• Properties: R−1 = R⊺ (orthogonal matrix), det(R) = 1
+– Euler angle (3 parameters)
+• Notation: [𝜃𝑥, 𝜃𝑦, 𝜃𝑧]
+• Issues: Not unique, not continuous, Gimbar lock case (loss of DOF)
+4
+Image: Wikipedia
+X
+Y
+Z
+𝜃𝑥
+𝜃𝑦
+𝜃𝑧
+“Gimber lock” case
+
+===== PAGE 5 =====
+Getting Started with 2D
+▪ 3D rotation representation (3 DOF)
+– Axis-angle representation (3 parameters; a.k.a. rotation vector, Rodrigues notation)
+• Notation: 𝛉 = 𝜃𝐞
+– e.g. Axis (unit vector): 𝐞 = [0, 0, 1], angle: 𝜃 = Τ𝜋 2 → 𝛉 = [0, 0, Τ𝜋 2]
+• Properties: Log map of SO(3), dual (−𝐞 with −𝜃 → 𝛉), reverse angle (−𝛉)
+• Note) The standard notation in OpenCV with cv.Rodrigues() (R ↔ rvec)
+– (Unit) Quaternion (4 parameters)
+• Notation: 𝐪 = 𝑞𝑤, 𝑞𝑥, 𝑞𝑦, 𝑞𝑧 or 𝑞𝑥, 𝑞𝑦, 𝑞𝑧, 𝑞𝑤
+– Meaning: 𝐪 = cos
+𝜃
+2 + 𝑒𝑥𝐢 + 𝑒𝑦𝐣 + 𝑒𝑧𝐤 sin
+𝜃
+2
+• Property: 𝑞𝑥2 + 𝑞𝑦2 + 𝑞𝑧2 + 𝑞𝑤2 = 1, dual (−𝐪), reverse angle (ഥ𝐪; conjugate)
+▪ Note) 3D rotation conversion
+– Python: scipy.spatial.transform.Rotation
+– Web apps: NinjaCalc, Glowbuzzer, Andre Gaschler
+5
+ 
+  Image: Wikipedia
+
+===== PAGE 6 =====
+Getting Started with 2D
+▪ Example) 3D rotation conversion [3d_rotation_conversion.py]
+import numpy as np
+from scipy.spatial.transform import Rotation
+# The given 3D rotation
+euler = (45, 30, 60) # Unit: [deg] in the XYZ-order
+# Generate 3D rotation object
+robj = Rotation.from_euler('zyx', euler[::-1], degrees=True)
+# Print other representations
+print('\n## Euler Angle (ZYX)')
+print(np.rad2deg (robj.as_euler('zyx'))) # [60, 30, 45] [deg] in the ZYX-order
+print('\n## Rotation Matrix')
+print(robj.as_matrix())
+print('\n## Rotation Vector')
+print(robj.as_rotvec())                  # [0.97, 0.05, 1.17]
+print('\n## Quaternion (XYZW)')
+print(robj.as_quat())                    # [0.44, 0.02, 0.53, 0.72]
+6
+
+===== PAGE 7 =====
+Getting Started with 2D
+▪ Similarity
+ℎ
+𝐻 =
+𝑓
+𝑍 or  
+ℎ
+𝑓 =
+𝐻
+𝑍 →  ℎ =?
+7
+𝐻
+𝑍
+𝑓
+ℎ
+ℎ = 𝑓
+𝐻
+𝑍
+
+===== PAGE 8 =====
+Getting Started with 2D
+▪ Point translation
+𝐱′ = 𝐱 + 𝐭
+8
+𝐭 = 2
+2
+𝐱′
+X
+Y
+𝐱 = [−1,0]⊺
+
+===== PAGE 9 =====
+Getting Started with 2D
+▪ Coordinate translation
+Valid for the following point transformation?
+𝐱′ = 𝐱 + 𝐭′ ?
+No!
+The inverse of point translation
+𝐱 = 𝐱′ + 𝐭′
+𝐱′ = 𝐱 − 𝐭′
+9
+X
+Y
+𝐱 = [−1,0]⊺
+𝐱′ = [−3, −2]⊺
+𝐭′ = 2
+2
+X’
+Y’
+
+===== PAGE 10 =====
+Getting Started with 2D
+▪ Point transformation
+𝐱′ = R𝐱 + 𝐭 = R | 𝐭 𝐱
+1
+10
+𝐱 = [2,0]⊺
+𝐭 = 2
+2
+𝐱′
+R
+𝜋
+2 =
+cos
+𝜋
+2 − sin
+𝜋
+2
+sin
+𝜋
+2 cos
+𝜋
+2
+= 0 −1
+1 0
+X
+Y
+
+===== PAGE 11 =====
+Getting Started with 2D
+▪ Coordinate transformation
+Valid for the following point transformation?
+𝐱′ = R′𝐱 + 𝐭′ ?
+11
+X
+Y
+𝐱′ = [−2,0]⊺
+𝐱 = [2,0]⊺
+X’
+Y’
+𝐭′ = 2
+2
+R′
+𝜋
+2 = 0 −1
+1 0
+
+===== PAGE 12 =====
+Getting Started with 2D
+▪ Coordinate transformation
+Valid for the following point transformation?
+𝐱′ = R′𝐱 + 𝐭′ ?
+No!
+The inverse of point transformation
+𝐱 = R′𝐱′ + 𝐭′
+↓R′⊺(𝐱 − 𝐭′) = 𝐱′
+𝐱′ = R𝐱 + 𝐭 ( R = R′⊺ and 𝐭 = −R′⊺𝐭′ )
+12
+X
+Y
+𝐱′ = [−2,0]⊺
+𝐱 = [2,0]⊺
+X’
+Y’
+𝐭′ = 2
+2
+R′
+𝜋
+2 = 0 −1
+1 0
+𝐭 = −2
+2
+R −
+𝜋
+2 = 0 1
+−1 0
+
+===== PAGE 13 =====
+Table of Contents: Single-view Geometry
+▪ Getting Started with 2D
+– Coordinate, rotation matrix, 3D rotation representation (rotation vector)
+– Similarity
+– Point transformation, coordinate transformation: inverse relationship
+▪ Camera Projection Models
+– Pinhole camera model
+– Geometric distortion models
+▪ Camera Calibration
+▪ Absolute Camera Pose Estimation
+The Cyclops, gouache and oil by Odilon Redon 13
+
+===== PAGE 14 =====
+Pinhole Camera Model
+▪ Pinhole camera model
+14
+camera obscura
+image plane
+pinhole
+object
+image
+A large-scale camera obscura
+at San Francisco, California
+Image: Wikipedia, PNG EGG
+A modern-day camera obscura An Image in a camera obscura
+at Portslade, England
+
+
+===== PAGE 15 =====
+Pinhole Camera Model
+▪ Real camera with a lens
+– Q) Why does a camera use a lens? To acquire more light rays
+▪ Pinhole camera model
+15
+camera obscura
+image plane
+pinhole
+object
+image
+Image: PNG EGG
+camera lens
+image sensorobject
+
+===== PAGE 16 =====
+Pinhole Camera Model
+▪ Pinhole camera model
+– In conclusion (without lens distortion), 𝐱 = P𝐗 (P = K R 𝐭])
+16
+image plane
+focal lengthprincipal axis focal length
+image plane
+focal point
+(camera center)
+camera obscura
+image plane
+object
+imagepinhole
+
+===== PAGE 17 =====
+Pinhole Camera Model
+▪ Pinhole camera model
+17
+image plane
++principal point
+𝐱 = 𝑥
+𝑦 = 𝑓 𝑋/𝑍
+𝑌/𝑍
+image plane
+principal axis
++
+𝐗 = [𝑋, 𝑌, 𝑍]⊺
+𝐱 = [𝑥, 𝑦]⊺
+𝑦 = 𝑓𝑌
+𝑍
+𝐂
+𝑓
+𝑍
+
+===== PAGE 18 =====
+Pinhole Camera Model
+▪ Pinhole camera model
+18
+image plane
++principal point
++
+𝐜 = [𝑐𝑥, 𝑐𝑦]⊺
+𝐱 = 𝑥
+𝑦 = 𝑓 𝑋/𝑍
+𝑌/𝑍 + 
+𝑐𝑥
+𝑐𝑦
+image plane
+principal axis
++
+𝐗 = [𝑋, 𝑌, 𝑍]⊺
+𝐱 = [𝑥, 𝑦]⊺
++
+𝐂
+𝑓
+𝑍
+
+===== PAGE 19 =====
+Pinhole Camera Model
+▪ Example) Simple camera calibration
+– Unknown: Focal length (𝑓) of the camera (unit: [pixel])
+– Given: The observed object height (ℎ) on the image plane (unit: [pixel])
+– Assumptions
+• The object height (𝐻) and distance (𝑍) from the camera are known.
+• The object is aligned with the image plane.
+19
+image plane
+object
+𝐻
+𝑍
+𝑓
+ℎ 𝐂
+∴ 𝑓 = 𝑍
+𝐻 ℎ
+
+===== PAGE 20 =====
+Pinhole Camera Model
+▪ Example) Simple depth estimation (object localization)
+– Unknown: Object distance (𝑍) from the camera (unit: [m])
+– Given: The observed object height (ℎ) on the image plane (unit: [pixel])
+– Assumptions
+• The object height (𝐻) and focal length (𝑓) are known.
+• The object is aligned with the image plane.
+20
+image plane
+object
+𝐻
+𝑍
+𝑓
+ℎ 𝐂
+∴ 𝑍 = 𝑓
+ℎ 𝐻
+
+===== PAGE 21 =====
+Pinhole Camera Model
+▪ Example) Simple object measurement
+– Unknown: Object height (𝐻) (unit: [m])
+– Given: The observed object height (ℎ) on the image plane (unit: [pixel])
+– Assumptions
+• The object distance (𝑍) from the camera and focal length (𝑓) are known.
+• The object is aligned with the image plane.
+21
+image plane
+object
+𝐻
+𝑍
+𝑓
+ℎ 𝐂
+∴ 𝐻 = ℎ
+𝑓 𝑍
+
+===== PAGE 22 =====
+Pinhole Camera Model
+▪ Vanishing points
+– A point on the image plane where mutually parallel lines in 3D space converge
+• A vector to the vanishing point is parallel to the lines.
+• A vector to the vanishing point is parallel to the reference plane made by the lines.
+22
+parallel lines
+top-view
+lines
+vanishing point
+side-view
+vanishing point
+
+===== PAGE 23 =====
+vanishing pointPinhole Camera Model
+▪ Vanishing points
+– A point on the image plane where mutually parallel lines in 3D space converge
+• A vector to the vanishing point is parallel to the lines.
+• A vector to the vanishing point is parallel to the reference plane made by the lines.
+23
+Image: Wikipedia
+
+===== PAGE 24 =====
+Pinhole Camera Model
+▪ Example) Simple camera pose estimation
+– Unknown: Tilt angle (𝜃𝑥) of the camera w.r.t. the reference plane (unit: [rad])
+– Given: A vanishing point (𝑥, 𝑦) from the reference plane
+– Assumptions
+• The focal length (𝑓) is known.
+• The principal point (𝑐𝑥, 𝑐𝑦) is known or selected as the center of image.
+• The camera has no roll, 𝜃𝑧 = 0.
+– Note) The tilt angle in this page is defined as the opposite direction of the common notation.
+24
+vanishing point
++principal point
+reference plane
++
+vanishing point
+𝑓
+𝜃𝑥
+𝐜 = [𝑐𝑥, 𝑐𝑦]⊺
+𝐯 = [𝑥, 𝑦]⊺
+𝑐𝑦 − 𝑦
+∴ 𝜃𝑥 = tan−1 𝑐𝑦 − 𝑦
+𝑓
+
+===== PAGE 25 =====
+Pinhole Camera Model
+▪ Example) Simple camera pose estimation
+– Unknown: Tilt angle (𝜃𝑥) of the camera w.r.t. the reference plane (unit: [rad])
+– Given: A vanishing point (𝑥, 𝑦) from the reference plane
+– Assumptions
+• The focal length (𝑓) is known.
+• The principal point (𝑐𝑥, 𝑐𝑦) is known or selected as the center of image.
+• The camera has no roll, 𝜃𝑧 = 0.
+– Note) The pan angle (𝜃𝑦) with respect to the rail can be calculated similarly using 𝑥 instead of 𝑦.
+25
+vanishing point
++principal point
+∴ 𝜃𝑥 = tan−1 𝑦 − 𝑐𝑦
+𝑓
+reference plane
++
+vanishing point
+𝑓
+𝜃𝑥
+𝐜 = [𝑐𝑥, 𝑐𝑦]⊺
+𝐯 = [𝑥, 𝑦]⊺
+𝑦 − 𝑐𝑦
+
+===== PAGE 26 =====
+contact point
+head point
+Pinhole Camera Model
+▪ Example) Object localization #1
+– Unknown: Object position and height (unit: [m])
+– Given: The object’s contact and head points on the image (unit: [pixel])
+– Assumptions
+• The focal length, principal points, and camera height, are known.
+• The camera is aligned to the reference plane.
+• The object is on the reference plane.
+26
++
+contact point
+head point
+[𝑥, 𝑦]⊺
+[𝑥′, 𝑦′]⊺
+𝑓
+𝐿
+𝑍
+𝑍′
+𝐻
+ҧ𝑥
+ത𝑦
+ҧ𝑧
+=
+𝑥 − 𝑐𝑥
+𝑦 − 𝑐𝑦
+𝑓
+∴ 𝑍 = ҧ𝑧
+ത𝑦𝐿 𝑋 = ҧ𝑥
+ത𝑦𝐿 𝐻 = ത𝑦
+ҧ𝑧 − ത𝑦′
+ҧ𝑧′ 𝑍
+
+===== PAGE 27 =====
+contact point
+head point
+Pinhole Camera Model
+▪ Example) Object localization #2
+– Unknown: Object position and height (unit: [m])
+– Given: The object’s contact and head points on the image (unit: [pixel])
+– Assumptions
+• The focal length, principal points, and camera height are known.
+• The camera is aligned to the reference plane. The camera orientation (R) is known.
+• The object is on the reference plane.
+27
++
+contact point
+head point
+[𝑥, 𝑦]⊺
+[𝑥′, 𝑦′]⊺
+𝑓
+𝐿
+𝑍
+𝑍′
+𝐻
+ҧ𝑥
+ത𝑦
+ҧ𝑧
+= R⊺
+𝑥 − 𝑐𝑥
+𝑦 − 𝑐𝑦
+𝑓
+∴ 𝑍 = ҧ𝑧
+ത𝑦𝐿 𝑋 = ҧ𝑥
+ത𝑦𝐿 𝐻 = ത𝑦
+ҧ𝑧 − ത𝑦′
+ҧ𝑧′ 𝑍
+∵ same camera center
+
+===== PAGE 28 =====
+Pinhole Camera Model
+▪ Example) Object localization #2 [object_localization.py]
+28
+
+
+===== PAGE 29 =====
+Pinhole Camera Model
+▪ Example) Object localization #2 [object_localization.py]
+if __name__ == '__main__':
+...
+while True:
+img_copy = img.copy()
+if mouse_state['xy_e'][0] > 0 and mouse_state['xy_e'][1] > 0:
+# Calculate object location and height
+c = R.T @ [mouse_state['xy_s'][0] - cx, mouse_state['xy_s'][1] - cy, f]
+h = R.T @ [mouse_state['xy_e'][0] - cx, mouse_state['xy_e'][1] - cy, f]
+if c[1] < 1e-6:
+continue
+X = c[0] / c[1] * L # Object location X [m]
+Z = c[2] / c[1] * L # Object location Y [m]
+H = (c[1] / c[2] - h[1] / h[2]) * Z # Object height [m]
+# Draw the head/contact points and location/height
+cv.line(img_copy, mouse_state['xy_s'], mouse_state['xy_e'], (0, 0, 255), 2)
+cv.circle(img_copy, mouse_state['xy_e'], 4, (255, 0, 0), -1) # Head point
+cv.circle(img_copy, mouse_state['xy_s'], 4, (0, 255, 0), -1) # Contact point
+info = f'X: {X:.3f}, Z: {Z:.3f}, H: {H:.3f}'
+cv.putText(img_copy, info, np.array(mouse_state['xy_s']) + (-20, 20), cv.FONT_HERSHEY_DUPLEX, 0.6, (0, 255
+cv.imshow('Object Localization and Measurement', img_copy)
+key = cv.waitKey(10)
+if key == 27: # ESC
+break
+cv.destroyAllWindows()
+29
+ҧ𝑥
+ത𝑦
+ҧ𝑧
+= R⊺
+𝑥 − 𝑐𝑥
+𝑦 − 𝑐𝑦
+𝑓
+𝑋 = ҧ𝑥
+ത𝑦𝐿 𝑍 = ҧ𝑧
+ത𝑦𝐿 𝐻 = ത𝑦
+ҧ𝑧 − ത𝑦′
+ҧ𝑧′ 𝑍
+
+===== PAGE 30 =====
+Pinhole Camera Model
+▪ Camera matrix K
+𝐱 = 𝑥
+𝑦 = 𝑓 𝑋/𝑍
+𝑌/𝑍 +
+𝑐𝑥
+𝑐𝑦 →  
+𝐱
+ =
+ K
+ො
+𝐱 where  K =
+𝑓 0 𝑐𝑥
+0 𝑓 𝑐𝑦
+0 0 1
+,  𝐱 =
+𝑥
+𝑦
+1
+, and  ො𝐱 =
+𝑋/𝑍
+𝑌/𝑍
+1
+Simplified as K =
+𝑓 0 𝑤/2
+0 𝑓 ℎ/2
+0 0 1
+(𝑤: image width, ℎ: image height)
+Generalized as K =
+𝑓𝑥 𝑠 𝑐𝑥
+0 𝑓𝑦 𝑐𝑦
+0 0 1
+(𝑠: skew parameter)
+30
+image plane (unit: [px]) normalized image plane (unit: [m])
+principal axis
+𝐗 = [𝑋, 𝑌, 𝑍]⊺
+𝐱 = [𝑥, 𝑦, 1]⊺
+𝐂
+𝑓
+𝑍
+ො𝐱 = [𝑋/𝑍, 𝑌/𝑍, 1]⊺
+1
+
+===== PAGE 31 =====
+Pinhole Camera Model
+▪ Homogeneous coordinates (a.k.a. projective coordinates)
+– It describes an 𝑛-dimensional project space as 𝑛 + 1-dimensional coordinate system.
+– It hold a non-conventional equivalence relationship: 𝑥1, 𝑥2, … , 𝑥𝑛+1 ~ 𝜆𝑥1, 𝜆𝑥2, … , 𝜆𝑥𝑛+1 such that (0 ≠ 𝜆 ∈ ℝ).
+• e.g. (5, 12) is written as (5, 12, 1) which is also equal to (10, 24, 2) or (15, 36, 3) or …
+– On the previous slide, 𝐱 = Kො𝐱 where  K =
+𝑓 0 𝑐𝑥
+0 𝑓 𝑐𝑦
+0 0 1
+,  𝐱 =
+𝑥
+𝑦
+1
+, and  ො𝐱 =
+𝑋/𝑍
+𝑌/𝑍
+1
+𝐱′ = K𝐗 where  K =
+𝑓 0 𝑐𝑥
+0 𝑓 𝑐𝑦
+0 0 1
+,  𝐱′ =
+𝑥′
+𝑦′
+𝑤′
+, and  𝐗 =
+𝑋
+𝑌
+𝑍
+(Note: 𝐱 =
+1
+𝑤′ 𝐱′)
+31
+principal axis
+𝐗 = [𝑋, 𝑌, 𝑍]⊺
+𝑍
+𝑤′𝑓
+𝐱′ = [𝑥′, 𝑦′, 𝑤′]⊺ image plane (unit: [px]) normalized image plane (unit: [m])
+𝐱 = [𝑥, 𝑦, 1]⊺
+𝐂
+𝑓
+ො𝐱 = [𝑋/𝑍, 𝑌/𝑍, 1]⊺
+1
+
+===== PAGE 32 =====
+Pinhole Camera Model
+▪ Why homogeneous coordinates?
+– An affine transformation (𝐲 = A𝐱 + 𝐛) is formulated by a single matrix multiplication.
+– A point at infinity (a.k.a. ideal point) is numerically represented by 𝑤 = 0.
+– A point and line (𝑎𝑥 + 𝑏𝑦 + 𝑐 = 0) are described beautifully as like 𝐥⊺𝐱 = 0 or 𝐱⊺𝐥 = 0 (𝐥 = [𝑎, 𝑏, 𝑐]⊺).
+• Intersection of two lines: 𝐱 = 𝐥1 × 𝐥2
+• A line by two points: 𝐥 = 𝐱1 × 𝐱2
+– A light ray (line at the camera center) is observed as a point on the image plane.
+• A plane at the camera center is observed as a line on the image plane.
+• A conic whose peak is at the camera center is observed as a conic section on the image plane.
+32
+Duality of a point and line
+
+===== PAGE 33 =====
+Pinhole Camera Model
+▪ Projection matrix P
+– Generally, a point 𝐗 is not based on the camera coordinate so that it needs be transformed to the camera coordinate.
+𝐗′ = R𝐗 + 𝐭 →  𝐗′ = R 𝐭 𝐗
+1
+– The whole camera projection from the world coordinate to the image coordinate:
+𝐱
+ =
+ K
+𝐗
+′
+ =
+ K
+(
+R
+𝐗
+ +
+ 𝐭
+)
+ =
+ K
+ R
+ 𝐭
+ 𝐗
+1
+→   
+𝐱
+ =
+ P
+𝐗 where  P = K R 𝐭 (3x4 matrix), 𝐱 and 𝐗 in homogeneous coordinates
+– Note) The camera pose (R⊺ and −R⊺𝐭) can be derived from the inverse of point transformation (R and 𝐭).
+T−1 = R 𝐭
+0 1
+−1
+= R⊺ −R⊺𝐭
+0 1
+33
+world coordinate
+camera coordinate 𝐂
+X𝐶
+Y𝐶
+Z𝐶
+Z
+Y
+X
+𝐎
+𝐗 = [𝑋, 𝑌, 𝑍]⊺
+𝐗′ = R𝐗 + 𝐭
+
+===== PAGE 34 =====
+Pinhole Camera Model
+▪ Example) Image formation [image_formation.py]
+34
+CloudCompare
+A point cloud: data/box.xyz
+Additive Gaussian noise
+𝜎 = 1 [px]
+
+===== PAGE 35 =====
+Pinhole Camera Model
+▪ Example) Image formation [image_formation.py]
+from scipy.spatial.transform import Rotation
+# The given camera configuration: Focal length, principal point, image resolution, position, and orientation
+f, cx, cy, noise_std = 1000, 320, 240, 1
+img_res = (640, 480)
+cam_pos = [[0, 0, 0], [-2, -2, 0], [2, 2, 0], [-2, 2, 0], [2, -2, 0]] # Unit: [m]
+cam_ori = [[0, 0, 0], [-15 , 15, 0], [15, -15, 0], [15, 15, 0], [-15, -15, 0]] # Unit: [deg]
+# Load a point cloud in the homogeneous coordinate
+X = np.loadtxt('../data/box.xyz') # Size: N x 3
+# Generate images for each camera pose
+K = np.array([[f, 0, cx], [0, f, cy], [0, 0, 1]])
+for i, (pos, ori) in enumerate(zip(cam_pos, cam_ori)):
+# Derive 'R' and 't'
+Rc = Rotation.from_euler('zyx', ori[::-1], degrees=True).as_matrix()
+R = Rc.T
+t = -Rc.T @ pos
+# Project the points (Alternative: `cv.projectPoints()`)
+x = K @ (R @ X.T + t.reshape(-1, 1)) # Size: 3 x N
+x /= x[-1]
+# Add Gaussian noise
+noise = np.random.normal(scale=noise_std, size=(2, len(X)))
+x[0:2,:] += noise
+R = R𝑐⊺ and 𝐭 = −R𝑐⊺ 𝐭𝑐
+K =
+𝑓 0 𝑐𝑥
+0 𝑓 𝑐𝑦
+0 0 1
+𝐱 = K(R𝐗 + 𝐭)
+𝐱 =
+𝑥/𝑤
+𝑦/𝑤
+𝑤/𝑤
+
+===== PAGE 36 =====
+Geometric Distortion Models
+▪ A camera lens generates geometric distortion, which can be approximated (modeled) as a nonlinear 
+function 𝑓𝑑.
+▪ Geometric distortion models 𝑓𝑑 are mostly defined on the normalized image plane.
+▪ Camera projection with geometric distortion: 𝐱 = proj(𝐗; K, R, 𝐭, 𝑑) where 𝑑 is a set of distortion coefficients.
+36
+Image: Shawn Becker
+3D point
+(the world coordinate)
+𝐗 =
+𝑋
+𝑌
+𝑍
+ො𝐱 = ො𝑥
+ො𝑦 = 𝑋′/𝑍′
+𝑌′/𝑍′𝐗′ = R𝐗 + 𝐭 ො𝐱𝑑 = 𝑓𝑑(ො𝐱) 𝐱 = 𝑥
+𝑦 = 𝑓𝑥 ො𝑥𝑑 + 𝑐𝑥
+𝑓𝑦 ො𝑦𝑑 + 𝑐𝑦
+2D point
+(the normalized image plane)
+3D point
+(the camera coordinate)
+geometric distortion pinhole camera projection
+Note) 𝐱 = K(R𝐗 + 𝐭) without distortion and normalization
+Q) How to represent such geometric distortion?
+𝐱 = proj(𝐗; K, R, 𝐭, 𝑑)
+
+===== PAGE 37 =====
+Geometric Distortion Models
+▪ Polynomial distortion model (a.k.a. Brown-Conrady model; 1919)
+ො𝑥𝑑
+ො𝑦𝑑
+= 1 + 𝑘1𝑟2 + 𝑘2𝑟4 + ⋯ ො𝑥
+ො𝑦 + 1 + 𝑝3𝑟2 + 𝑝4𝑟4 + ⋯ 2𝑝1 ො𝑥ො𝑦 + 𝑝2(𝑟2 + 2ො𝑥2)
+2𝑝2 ො𝑥ො𝑦 + 𝑝1(𝑟2 + 2𝑦2) where  𝑟2 = ො𝑥2 + ො𝑦2
+– OpenCV (default): cv.projectPoints() ↔ cv.undistortPoints()
+37
+Tangential distortion
+Why?
+Lens and sensor
+are not parallel.
+(usually negligible)
+Radial distortion
+Image: Camera Calibration Toolbox for MATLAB, Wikipedia, MathWorks
+barrel dist. (-)
+pincushion dist. (+)
+mustache dist.
+
+===== PAGE 38 =====
+Geometric Distortion Models
+Radial distortion
+Tangential distortion
+▪ Example) Geometric distortion visualization [distortion_visualization.py]
+38
+
+===== PAGE 39 =====
+Geometric Distortion Models
+▪ Example) Geometric distortion visualization [distortion_visualization.py]
+# The initial camera configuration
+img_w, img_h = (640, 480)
+K = np.array([[800, 0, 320],
+[0, 800, 240],
+[0, 0, 1.]])
+dist_coeff = np.array([-0.2, 0.1, 0, 0])
+grid_x, grid_y, grid_z = (-18, 19), (-15, 16), 20
+obj_pts = np.array([[x, y, grid_z] for y in range(*grid_y) for x in range(*grid_x)], dtype=np.float32)
+while True:
+# Project 3D points with/without distortion
+dist_pts, _ = cv.projectPoints(obj_pts, np.zeros(3), np.zeros(3), K, dist_coeff)
+zero_pts, _ = cv.projectPoints(obj_pts, np.zeros(3), np.zeros(3), K, np.zeros(4))
+# Draw vectors
+img_vector = np.full((img_h, img_w, 3), 255, dtype=np.uint8)
+for zero_pt, dist_pt in zip(zero_pts, dist_pts):
+cv.line(img_vector, np.int32(zero_pt.flatten()), np.int32(dist_pt.flatten()), (255, 0, 0))
+for pt in dist_pts:
+cv.circle(img_vector, np.int32(pt.flatten()), 1, (0, 0, 255), -1)
+# Draw grids
+img_grid = np.full((img_h, img_w, 3), 255, dtype=np.uint8)
+dist_pts = dist_pts.reshape(len(range(*grid_y)), -1, 2)
+for pts in dist_pts:
+cv.polylines(img_grid, [np.int32(pts)], False, (0, 0, 255))
+for pts in dist_pts.swapaxes(0, 1):
+39
+
+===== PAGE 40 =====
+Geometric Distortion Models
+▪ Fisheye lens model (a.k.a. Kannala-Brandt model; T-PAMI 2006)
+ො𝑥𝑑
+ො𝑦𝑑
+= 1 + 𝑘1𝜃2 + 𝑘2𝜃4 + ⋯
+𝜃
+𝑟
+ො𝑥
+ො𝑦 where  𝑟2 = ො𝑥2 + ො𝑦2 and 𝜃 = tan−1 𝑟
+– The fisheye lens model can describe strong barrel distortion especially around image boundaries.
+– OpenCV: cv.fisheye.projectPoints() ↔ cv.fisheye.undistortPoints()
+40
+Image: OpenCV
+Original fisheye image Polynomial distortion model Fisheye lens model
+
+===== PAGE 41 =====
+Geometric Distortion Models
+▪ More parametric distortion models
+41
+Image: Lochman et al., “BabelCalib: A Universal Approach to Calibrating Central Cameras”, ICCV, 2021 Homepage
+
+===== PAGE 42 =====
+Geometric Distortion Models
+▪ Geometric distortion correction
+– Input: The original image
+– Output: Its rectified image (without geometric distortion)
+– Given: Its camera matrix and distortion coefficients
+– Solutions for the polynomial distortion model
+• OpenCV cv.undistort() and cv.undistortPoints() (Note: included in imgproc module)
+↔ cv.projectPoints() (Note: included in calib3d module)
+42
+K1: 1.105763E-01 
+K2: 1.886214E-02 
+K3: 1.473832E-02 
+P1:-8.448460E-03 
+P2:-7.356744E-03 
+distortion correction
+Image: Shawn Becker
+
+===== PAGE 43 =====
+Geometric Distortion Models
+▪ Example) Geometric distortion correction [distortion_correction.py]
+43
+Rectified ImageOriginal Image
+
+
+===== PAGE 44 =====
+Geometric Distortion Models
+▪ Example) Geometric distortion correction [distortion_correction.py]
+# The given video and calibration data
+video_file = '../data/chessboard.avi'
+K = np.array([[432.7390364738057, 0, 476.0614994349778],
+[0, 431.2395555913084, 288.7602152621297],
+[0, 0, 1]]) # Derived from `calibrate_camera.py`
+dist_coeff = np.array([-0.2852754904152874, 0.1016466459919075, -0.0004420196146339175, ...])
+# Open a video
+video = cv.VideoCapture(video_file)
+# Run distortion correction
+show_rectify = True
+map1, map2 = None, None
+while True:
+# Read an image from the video
+valid, img = video.read()
+...
+# Rectify geometric distortion (Alternative: `cv.undistort()`)
+info = "Original"
+if show_rectify:
+if map1 is None or map2 is None:
+map1, map2 = cv.initUndistortRectifyMap(K, dist_coeff, None, None, (img.shape[1], img.shape[0]), cv.CV_32FC1
+img = cv.remap(img, map1, map2, interpolation=cv.INTER_LINEAR)
+info = "Rectified"
+cv.putText(img, info, (10, 25), cv.FONT_HERSHEY_DUPLEX, 0.6, (0, 255, 0)) 44
+
+===== PAGE 45 =====
+Camera Projection Model
+▪ Camera parameters ~ projection matrix P
+𝐱 = proj(𝐗; K, R, 𝐭, 𝑑) ~  𝐱 = P𝐗 = K R 𝐭 𝐗
+– Intrinsic parameters ~ camera matrix K
+• e.g. Focal length, principle point, skew, geometric distortion coefficient, …
+– Extrinsic parameters ~ point transformation R and 𝐭
+• e.g. Rotation and translation
+▪ A camera projection model maps a 3D point (metric) in the 3D world to a 2D point (pixel) on the image.
+→ A camera projection model interprets a pixel on the image as its physical ray in the 3D world.
+45
+Simplification without consideration of geometric distortion
+world coordinate
+image coordinate
+Z
+Y
+X
+𝐎
+𝐗 = [𝑋, 𝑌, 𝑍]⊺ 𝐗′ = R𝐗 + 𝐭
+camera center
+𝐱 = K 𝐗′
+ො𝐱′ = K−1𝐱
+
+===== PAGE 46 =====
+Camera Calibration
+▪ Camera calibration
+– Unknown: Intrinsic + extrinsic parameters (5* + 6 DOF)
+• Note) The number of intrinsic parameters* can vary according to user configuration.
+– Given: 3D points 𝐗1, 𝐗2, …, 𝐗𝑛 and their projected points 𝐱1, 𝐱2, …, 𝐱𝑛
+– Constraints: 𝑛 x projection 𝐱𝑖 = K R | 𝐭 𝐗𝑖
+46
+9 x 6 chessboard
+
+===== PAGE 47 =====
+Camera Calibration
+▪ Camera calibration
+– Unknown: Intrinsic + 𝑚 x extrinsic parameters (5* + 𝑚 x 6 DOF)
+– Given: 3D points 𝐗1, 𝐗2, …, 𝐗𝑛 and their projected points, 𝐱𝑖
+𝑗, on the 𝑗th image
+• Note) 𝑚: the number of images, 𝑛: the number of 3D points
+– Constraints: 𝑚 x 𝑛 x projection 𝐱𝑖
+𝑗 = proj 𝐗𝑖; K, R𝑗, 𝐭𝑗, 𝑑 ~ K R𝑗| 𝐭𝑗 𝐗𝑖
+– Solutions [Tools]
+• OpenCV: cv.calibrateCamera() and cv.initCameraMatrix2D()
+• Camera Calibration Toolbox for MATLAB, Jean-Yves Bouguet
+• DarkCamCalibrator, 다크 프로그래머
+– Note) How to get calibration boards
+• Print out the pattern and stick it on a hard board
+• Calibration Checkerboard Collection, Mark Jones
+• Pattern Generator, calib.io
+47
+
+
+===== PAGE 48 =====
+Camera Calibration
+▪ Example) Camera calibration [camera_calibration.py]
+48
+## Camera Calibration Results
+* The number of applied images = 22
+* RMS error = 0.473353
+* Camera matrix (K) = 
+[
+432.7390364738057, 0, 
+476.0614994349778]
+[0, 
+431.2395555913084, 
+288.7602152621297]
+[0, 0, 1]
+* Distortion coefficient (k1, k2, 
+p1, 
+p2, k3, ...) = 
+[-0.2852754904152874, 0.1016466459919075, 
+-
+0.0004420196146339175, 
+0.0001149909868437517, -0.01803978785585194]
+960 x 540
+Note) Close to the center of the image, (480, 270)
+Note) Close to zero (usually negligible)
+Note) Field-of-view (FOV) = focal length (w/o distortion)
+- Horizontal: 2 × tan−1 𝑤/2
+𝑓𝑥
+= 96°
+- Vertical: 2 × tan−1 ℎ/2
+𝑓𝑦
+= 64°
+𝑤
+2
+𝑓𝑥
+FOV𝑥
+2
+
+===== PAGE 49 =====
+Camera Calibration
+▪ Example) Camera calibration [camera_calibration.py]
+def select_img_from_video(video_file, board_pattern, select_all=False, wait_msec=10):
+# Open a video
+video = cv.VideoCapture(video_file)
+# Select images
+img_select = []
+...
+return img_select
+def calib_camera_from_chessboard(images, board_pattern, board_cellsize, K=None, dist_coeff=None, calib_flags=None):
+# Find 2D corner points from given images
+img_points = []
+for img in images:
+gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+complete, pts = cv.findChessboardCorners(gray, board_pattern)
+if complete:
+img_points.append(pts)
+assert len(img_points) > 0, 'There is no set of complete chessboard points!'
+# Prepare 3D points of the chess board
+obj_pts = [[c, r, 0] for r in range(board_pattern[1]) for c in range(board_pattern[0])]
+obj_points = [np.array(obj_pts, dtype=np.float32) * board_cellsize] * len(img_points) # Must be `np.float32`
+# Calibrate the camera
+return cv.calibrateCamera(obj_points, img_points, gray.shape[::-1], K, dist_coeff, flags=calib_flags)
+if __name__ == '__main__':
+49
+𝐱𝑖
+𝑗
+𝐗𝑖
+
+===== PAGE 50 =====
+Absolute Camera Pose Estimation
+▪ Absolute camera pose estimation (perspective-n-point; PnP)
+– Unknown: Camera pose R and 𝐭 (6 DOF)
+– Given: 3D points 𝐗1, 𝐗2, …, 𝐗𝑛, their projected points 𝐱1, 𝐱2, …, 𝐱𝑛, and camera matrix K
+– Constraints: 𝑛 x projection 𝐱𝑖 = K R | 𝐭 𝐗𝑖
+– Solutions (𝑛 ≥ 3) → 3-point algorithm
+• OpenCV: cv.solvePnP() and cv.solvePnPRansac()
+50
+landmark map
+
+===== PAGE 51 =====
+Absolute Camera Pose Estimation
+▪ Example) Pose estimation (chessboard) [pose_estimation_chessboard.py]
+51
+- Prepare a 3D box (AR model)
+- Prepare 3D points (chessboard)
+- Grab an image
+- Find a chessboard on the image
+[Camera pose estimation]
+- Estimate camera pose using
+cv.solvePnP()
+[AR rendering]
+- Draw the 3D box on the image
+using  
+cv.projectPoints()
+
+
+===== PAGE 52 =====
+Absolute Camera Pose Estimation
+▪ Example) Pose estimation (chessboard) [pose_estimation_chessboard.py]
+# Open a video
+video = cv.VideoCapture(video_file)
+# Prepare a 3D box for simple AR
+box_lower = board_cellsize * np.array([[4, 2, 0], [5, 2, 0], [5, 4, 0], [4, 4, 0]])
+box_upper = board_cellsize * np.array([[4, 2, -1], [5, 2, -1], [5, 4, -1], [4, 4, -1]])
+# Prepare 3D points on a chessboard
+obj_points = board_cellsize * np.array([[c, r, 0] for r in range(board_pattern[1]) for c in range(board_pattern[0])])
+# Run pose estimation
+while True:
+# Read an image from the video
+valid, img = video.read()
+if not valid:
+break
+# Estimate the camera pose
+complete, img_points = cv.findChessboardCorners(img, board_pattern, board_criteria)
+if complete:
+ret, rvec, tvec = cv.solvePnP(obj_points, img_points, K, dist_coeff)
+# Draw the box on the image
+line_lower, _ = cv.projectPoints(box_lower, rvec, tvec, K, dist_coeff)
+line_upper, _ = cv.projectPoints(box_upper, rvec, tvec, K, dist_coeff)
+cv.polylines(img, [np.int32(line_lower)], True, (255, 0, 0), 2)
+cv.polylines(img, [np.int32(line_upper)], True, (0, 0, 255), 2)
+52
+
+
+===== PAGE 53 =====
+Absolute Camera Pose Estimation
+▪ Example) Pose estimation (chessboard) [pose_estimation_chessboard.py]
+# Open a video
+# Prepare a 3D box for simple AR
+# Prepare 3D points on a chessboard
+# Run pose estimation
+while True:
+# Read an image from the video
+# Estimate the camera pose
+complete, img_points = cv.findChessboardCorners(img, board_pattern, board_criteria)
+if complete:
+ret, rvec, tvec = cv.solvePnP(obj_points, img_points, K, dist_coeff)
+# Draw the box on the image
+line_lower, _ = cv.projectPoints(box_lower, rvec, tvec, K, dist_coeff)
+line_upper, _ = cv.projectPoints(box_upper, rvec, tvec, K, dist_coeff)
+cv.polylines(img, [np.int32(line_lower)], True, (255, 0, 0), 2)
+cv.polylines(img, [np.int32(line_upper)], True, (0, 0, 255), 2)
+for b, t in zip(line_lower, line_upper):
+cv.line(img, np.int32(b.flatten()), np.int32(t.flatten()), (0, 255, 0), 2)
+# Print the camera position
+R, _ = cv.Rodrigues(rvec) # Alternative) `scipy.spatial.transform.Rotation`
+p = (-R.T @ tvec).flatten()
+info = f'XYZ: [{p[0]:.3f} {p[1]:.3f} {p[2]:.3f}]'
+cv.putText(img, info, (10, 25), cv.FONT_HERSHEY_DUPLEX, 0.6, (0, 255, 0)) 53
+
+
+===== PAGE 54 =====
+Absolute Camera Pose Estimation
+▪ Example) Pose estimation (book) [pose_estimation_book1.py]
+54
+- Load the cover image
+- Extract ORB features
+- Build 
+3D object points 𝐗1, 𝐗2, …
+- Grab an input image
+- Extract 
+ORB features 𝐱1, 𝐱2, …
+- Match them to the object features
+[Outlier Rejection]
+- Remove wrong matches using
+cv::
+solvePnPRansac()
+[Camera Pose Estimation]
+- Estimate camera pose using
+cv::
+solvePnP()
+[Camera Pose Update]
+- Intrinsic: K (given and fixed)
+-
+ Extrinsic: 
+R
+, 
+𝐭
+Pass correct matchesPass tentative matches
+Draw the box using 
+cv::
+projectPoints
+()
+(due to unknown and changing K; autofocus)
+
+===== PAGE 55 =====
+Absolute Camera Pose Estimation
+▪ Example) Pose estimation (book) + camera calibration [pose_estimation_book2.py]
+55
+- Load the cover image
+- Extract ORB features
+- Build 
+3D object points 𝐗1, 𝐗2, …
+- Grab an input image
+- Extract 
+ORB features 𝐱1, 𝐱2, …
+- Match them to the object features
+[Outlier Rejection]
+- Remove wrong matches using
+cv::
+solvePnPRansac()
+[Camera Pose Estimation]
+- Estimate camera parameters using
+cv::
+calibrateCamera()
+[Camera Pose Update]
+-
+ Intrinsic: 
+K (initially given)
+-
+ Extrinsic: 
+R
+, 
+𝐭
+Pass correct matchesPass tentative matches
+Draw the box using 
+cv::
+projectPoints
+()
+(due to wrong initial K)
+
+===== PAGE 56 =====
+Absolute Camera Pose Estimation
+▪ Example) Pose estimation (book) + camera calibration – initially given K [pose_estimation_book3.py]
+56
+- Load the cover image
+- Extract ORB features
+- Build 
+3D object points 𝐗1, 𝐗2, …
+- Grab an input image
+- Extract 
+ORB features 𝐱1, 𝐱2, …
+- Match them to the object features
+[Outlier Rejection]
+- Remove wrong matches using
+cv::
+findHomography()
+[Camera Pose Estimation]
+- Estimate camera parameters using
+cv::
+calibrateCamera()
+[Camera Pose Update]
+-
+ Intrinsic: 
+K (initially known)
+-
+ Extrinsic: 
+R
+, 
+𝐭
+Pass correct matchesPass tentative matches
+Draw the box using 
+cv::
+projectPoints
+()
+(free from K)
+(due to wrong initial K)
+
+
+===== PAGE 57 =====
+Summary) Single-view Geometry
+▪ Camera Projection Models: 𝐱 = proj(𝐗; K, R, 𝐭, 𝑑)
+– Pinhole camera model: 
+𝐱
+ =
+ K
+(
+R
+𝐗
+ +
+ 𝐭
+)
+• Note) Homogeneous coordinate
+• Example) Object localization / image formation
+– Geometric distortion models: ො𝐱𝑑 = 𝑓𝑑(ො𝐱) on the normalized image plane ( ො𝐱; Ƹ𝑧 = 1)
+• e.g. Polynomial distortion model: Radial distortion and tangential distortion
+• Example) Distortion visualization / distortion correction
+▪ Camera Calibration
+– Problem) Finding camera intrinsic parameters (K, distortion coefficients) and extrinsic parameters ( R and 𝐭)
+– Example) Camera calibration
+▪ Absolute Camera Pose Estimation (PnP)
+– Problem) Finding camera extrinsic parameters (R and 𝐭) → camera pose (R⊺ and −R⊺𝐭)
+– Example) Pose estimation (chessboard)
+– Example) Pose estimation (book) as three versions
+• Q) What is 
+RANSAC? What is 
+homography?
+57
+
+===== PAGE 58 =====
+Beyond Classic Camera Models and Calibration
+▪ Classic camera models: Parametric models
+– Pinhole camera projection + Polynomial lens distortion (a.k.a. Brown-Conrady model)
+– Pinhole camera projection + Fisheye lens distortion (a.k.a. Kannala-Brandt model)
+▪ Non-parametric representation
+– Why non-parametric models (more parameters)?         How to represent the camera projection?
+58Image: Schops et. al., “Why Having 10,000 Parameters in Your Camera Model is Better Than Twelve”, CVPR, 2020 CVF arXiv Github
+
+
+===== PAGE 59 =====
+Beyond Classic Camera Models and Calibration
+▪ Neural representation
+– e.g., Perspective fields [CVPR 2023]
+59Image: Jin et. al., “Perspective Fields for Single Image Camera Calibration”, CVPR, 2023 Homepage Github
